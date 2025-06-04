@@ -250,9 +250,9 @@ export class PreSurveyComponent implements OnInit {
   private readonly SURVEY_URL = 'https://qfreeaccountssjc1.az1.qualtrics.com/jfe/form/SV_72JuPQrWTnAq5FA';
   private readonly VALID_COMPLETION_CODE = '7azh8a';
   private readonly SITES = [
-    'https://lumos-socratis-prompts-three.vercel.app/main',
+    'https://control-vercel.vercel.app/main',
     'https://lumos-socratis-prompts.vercel.app/main',
-    'https://socratic-branch.vercel.app/main'
+    'https://lumos-socratis-prompts-three.vercel.app/main'
   ];
 
   userId: string = '';
@@ -292,14 +292,29 @@ export class PreSurveyComponent implements OnInit {
     // Handle iframe load event if needed
   }
 
-  private getRandomSite(): string {
-    const randomIndex = Math.floor(Math.random() * this.SITES.length);
-    return this.SITES[randomIndex];
-  }
+private getBalancedSite(): string {
+  // Get current counts (initialize if first time)
+  const counts = JSON.parse(localStorage.getItem('siteCounts') || '[0,0,0]');
+  
+  // Find the site(s) with the minimum count
+  const minCount = Math.min(...counts);
+  const availableSites = counts
+    .map((count, index) => count === minCount ? index : -1)
+    .filter(index => index !== -1);
+  
+  // Randomly select from sites with minimum count
+  const selectedIndex = availableSites[Math.floor(Math.random() * availableSites.length)];
+  
+  // Increment the selected site's count
+  counts[selectedIndex]++;
+  localStorage.setItem('siteCounts', JSON.stringify(counts));
+  
+  return this.SITES[selectedIndex];
+}
 
   submitCode(): void {
     if (this.completionCode === '7azh8a') {
-      const targetSite = this.getRandomSite();
+      const targetSite = this.getBalancedSite();
       window.location.href = `${targetSite}?userId=${this.userId}`;
     } else {
       this.showError = true;
