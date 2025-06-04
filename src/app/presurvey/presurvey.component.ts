@@ -299,8 +299,8 @@ private getBalancedSite(): string {
   // Find the site(s) with the minimum count
   const minCount = Math.min(...counts);
   const availableSites = counts
-    .map((count, index) => count === minCount ? index : -1)
-    .filter(index => index !== -1);
+    .map((count: number, index: number) => count === minCount ? index : -1)
+    .filter((index: number) => index !== -1);
   
   // Randomly select from sites with minimum count
   const selectedIndex = availableSites[Math.floor(Math.random() * availableSites.length)];
