@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Location } from '@angular/common';
+import { RefreshPreventionService } from '../services/refresh-prevention.service';
 
 @Component({
   selector: 'app-presurvey',
@@ -246,7 +248,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
     }
   `]
 })
-export class PreSurveyComponent implements OnInit {
+export class PreSurveyComponent implements OnInit, OnDestroy {
   private readonly SURVEY_URL = 'https://qfreeaccountssjc1.az1.qualtrics.com/jfe/form/SV_72JuPQrWTnAq5FA';
   private readonly VALID_COMPLETION_CODE = '7azh8a';
   private readonly SITES = [
@@ -263,14 +265,65 @@ export class PreSurveyComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private location: Location,
+    private refreshPrevention: RefreshPreventionService
   ) {
     this.userId = this.generateUserId();
     this.surveyUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.SURVEY_URL);
   }
 
   ngOnInit(): void {
-    // Additional initialization if needed
+    // Set navigating to true when component initializes
+    this.refreshPrevention.setNavigating(true);
+
+    // Check if consent is still valid
+    const hasConsented = sessionStorage.getItem('hasConsented') === 'true';
+    if (!hasConsented) {
+      this.router.navigate(['/consent']);
+      return;
+    }
+
+    // Disable browser back button
+    history.pushState(null, '', window.location.href);
+    window.onpopstate = () => {
+      history.pushState(null, '', window.location.href);
+    };
+
+    // Prevent refresh with multiple layers
+    window.addEventListener('beforeunload', this.preventRefresh);
+    window.addEventListener('unload', this.preventRefresh);
+    
+    // Add keydown event listener to prevent F5 and Ctrl+R
+    window.addEventListener('keydown', this.preventRefreshKeys);
+  }
+
+  ngOnDestroy() {
+    // Clean up when component is destroyed
+    this.refreshPrevention.setNavigating(false);
+
+    // Clean up all event listeners
+    window.onpopstate = null;
+    window.removeEventListener('beforeunload', this.preventRefresh);
+    window.removeEventListener('unload', this.preventRefresh);
+    window.removeEventListener('keydown', this.preventRefreshKeys);
+  }
+
+  private preventRefresh = (event: BeforeUnloadEvent | Event) => {
+    event.preventDefault();
+    if (event instanceof BeforeUnloadEvent) {
+      event.returnValue = '';
+    }
+    return '';
+  }
+
+  private preventRefreshKeys = (event: KeyboardEvent) => {
+    // Prevent F5 and Ctrl+R
+    if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
   }
 
   private generateUserId(): string {
@@ -292,25 +345,25 @@ export class PreSurveyComponent implements OnInit {
     // Handle iframe load event if needed
   }
 
-private getBalancedSite(): string {
-  // Get current counts (initialize if first time)
-  const counts = JSON.parse(localStorage.getItem('siteCounts') || '[0,0,0]');
-  
-  // Find the site(s) with the minimum count
-  const minCount = Math.min(...counts);
-  const availableSites = counts
-    .map((count: number, index: number) => count === minCount ? index : -1)
-    .filter((index: number) => index !== -1);
-  
-  // Randomly select from sites with minimum count
-  const selectedIndex = availableSites[Math.floor(Math.random() * availableSites.length)];
-  
-  // Increment the selected site's count
-  counts[selectedIndex]++;
-  localStorage.setItem('siteCounts', JSON.stringify(counts));
-  
-  return this.SITES[selectedIndex];
-}
+  private getBalancedSite(): string {
+    // Get current counts (initialize if first time)
+    const counts = JSON.parse(localStorage.getItem('siteCounts') || '[0,0,0]');
+    
+    // Find the site(s) with the minimum count
+    const minCount = Math.min(...counts);
+    const availableSites = counts
+      .map((count: number, index: number) => count === minCount ? index : -1)
+      .filter((index: number) => index !== -1);
+    
+    // Randomly select from sites with minimum count
+    const selectedIndex = availableSites[Math.floor(Math.random() * availableSites.length)];
+    
+    // Increment the selected site's count
+    counts[selectedIndex]++;
+    localStorage.setItem('siteCounts', JSON.stringify(counts));
+    
+    return this.SITES[selectedIndex];
+  }
 
   submitCode(): void {
     if (this.completionCode === '7azh8a') {

@@ -5,48 +5,18 @@ import { Router } from '@angular/router';
   selector: 'app-consent',
   template: `
     <div class="consent-container">
-      <div class="consent-content">
-        <div class="header">
-          <h1>Consent Form</h1>
-          <p class="subtitle">Thank you for participating in our study. Please read the following consent form carefully.</p>
-        </div>
-
-        <div class="consent-text">
-          <p class="intro">You are being asked to be in a research study. This form is designed to tell you everything you need to think about before you decide to consent (agree) to be in the study or not to be in the study. It is entirely your choice. If you decide to take part, you can change your mind later on and withdraw from the research study. You can skip any questions that you do not wish to answer.</p>
-          
-          <div class="section">
-            <h3>Before making your decision:</h3>
-            <ul>
-              <li>Please carefully read this form or have it read to you</li>
-              <li>Please ask questions about anything that is not clear</li>
-            </ul>
-          </div>
-
-          <div class="section">
-            <h3>Study Overview</h3>
-            <p>The purpose of this study is to observe decisions that subjects make using data presented in a visualization interface.</p>
-          </div>
-
-          <div class="section">
-            <h3>Procedures</h3>
-            <p>In this study, you will be asked to:</p>
-            <ul>
-              <li>Complete a pre-survey</li>
-              <li>Interact with data visualizations</li>
-              <li>Answer questions about the visualizations</li>
-              <li>Complete a post-survey</li>
-            </ul>
-          </div>
-
-          <div class="section">
-            <h3>Risks and Benefits</h3>
-            <p>We do not anticipate any risks greater than those involved in daily activities such as using a computer. This study is designed to learn more about how people interact with data visualizations.</p>
-          </div>
-
-          <div class="section">
-            <h3>Confidentiality</h3>
-            <p>Your responses will be kept confidential and will only be used for research purposes. Your personal information will not be shared with any third parties.</p>
-          </div>
+      <div class="header">
+        <h1>Consent Form</h1>
+      </div>
+      
+      <div class="content-wrapper">
+        <div class="pdf-viewer-container">
+          <iframe
+            [src]="pdfUrl | safe"
+            width="100%"
+            height="700vh"
+            style="border: none;"
+          ></iframe>
         </div>
 
         <div class="consent-footer">
@@ -67,84 +37,43 @@ import { Router } from '@angular/router';
     .consent-container {
       min-height: 100vh;
       background-color: #f8fafc;
-      padding: 40px 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-
-    .consent-content {
-      max-width: 800px;
-      margin: 0 auto;
-      background-color: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .header {
       background-color: #1a365d;
       color: white;
-      padding: 40px;
+      padding: 24px 40px;
       text-align: center;
     }
 
-    h1 {
+    .header h1 {
       margin: 0;
-      font-size: 2.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-    }
-
-    .subtitle {
-      margin: 16px 0 0;
-      font-size: 1.125rem;
-      opacity: 0.9;
-    }
-
-    .consent-text {
-      padding: 40px;
-      color: #2d3748;
-      line-height: 1.7;
-    }
-
-    .intro {
-      font-size: 1.125rem;
-      margin-bottom: 32px;
-      color: #4a5568;
-    }
-
-    .section {
-      margin-bottom: 32px;
-    }
-
-    .section:last-child {
-      margin-bottom: 0;
-    }
-
-    h3 {
-      color: #1a365d;
-      font-size: 1.25rem;
+      font-size: 2rem;
       font-weight: 600;
-      margin: 0 0 16px;
     }
 
-    ul {
-      margin: 0;
-      padding-left: 24px;
+    .content-wrapper {
+      flex: 1;
+      padding: 0 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    li {
-      margin-bottom: 12px;
-      color: #4a5568;
-    }
-
-    li:last-child {
-      margin-bottom: 0;
+    .pdf-viewer-container {
+      flex: 1;
+      background-color: #fff;
+      border-radius: 8px;
+      margin-top: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
     }
 
     .consent-footer {
-      padding: 32px 40px;
-      background-color: #f8fafc;
-      border-top: 1px solid #e2e8f0;
+      padding: 20px 0;
+      background-color: transparent;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -212,25 +141,27 @@ import { Router } from '@angular/router';
       transform: translateX(4px);
     }
 
-    @media (max-width: 640px) {
-      .consent-container {
-        padding: 20px 16px;
+    @media (max-width: 768px) {
+      .content-wrapper {
+        padding: 0 20px;
       }
 
       .header {
-        padding: 32px 24px;
+        padding: 20px;
       }
 
-      h1 {
-        font-size: 2rem;
+      .header h1 {
+        font-size: 1.75rem;
       }
+    }
 
-      .consent-text {
-        padding: 24px;
+    @media (max-width: 640px) {
+      .content-wrapper {
+        padding: 0 16px;
       }
 
       .consent-footer {
-        padding: 24px;
+        padding: 16px 0;
         flex-direction: column;
       }
 
@@ -247,11 +178,14 @@ import { Router } from '@angular/router';
 })
 export class ConsentComponent {
   accepted = false;
+  pdfUrl = 'assets/consent-form.pdf';
 
   constructor(private router: Router) {}
 
   onContinue() {
     if (this.accepted) {
+      // Set consent status in session storage
+      sessionStorage.setItem('hasConsented', 'true');
       this.router.navigate(['/presurvey']);
     }
   }
