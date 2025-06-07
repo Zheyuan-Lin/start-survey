@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ConsentComponent } from './consent/consent.component';
@@ -22,7 +21,6 @@ import { RouteReuseStrategy } from '@angular/router';
   imports: [
     BrowserModule,
     FormsModule,
-    NgxExtendedPdfViewerModule,
     AppRoutingModule,
     RouterModule.forRoot([
       { path: '', redirectTo: '/consent', pathMatch: 'full' },
