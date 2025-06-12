@@ -249,7 +249,7 @@ import { RefreshPreventionService } from '../services/refresh-prevention.service
   `]
 })
 export class PreSurveyComponent implements OnInit, OnDestroy {
-  private readonly SURVEY_URL = 'https://qfreeaccountssjc1.az1.qualtrics.com/jfe/form/SV_72JuPQrWTnAq5FA';
+  private readonly SURVEY_URL = 'https://ecas.qualtrics.emory.edu/jfe/form/SV_e4jZsIW3xRDvSl0';
   private readonly VALID_COMPLETION_CODE = '7azh8a';
   private readonly SITES = [
     'https://control-vercel.vercel.app/main',
