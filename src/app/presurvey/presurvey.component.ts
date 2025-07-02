@@ -346,21 +346,17 @@ export class PreSurveyComponent implements OnInit, OnDestroy {
   }
 
   private getBalancedSite(): string {
-    // Get current counts (initialize if first time)
-    const counts = JSON.parse(localStorage.getItem('siteCounts') || '[0,0,0]');
+    // Get the current participant count (initialize if first time)
+    const currentCount = parseInt(localStorage.getItem('totalParticipants') || '0');
     
-    // Find the site(s) with the minimum count
-    const minCount = Math.min(...counts);
-    const availableSites = counts
-      .map((count: number, index: number) => count === minCount ? index : -1)
-      .filter((index: number) => index !== -1);
+    // Calculate which site to assign based on round-robin
+    const selectedIndex = currentCount % this.SITES.length;
     
-    // Randomly select from sites with minimum count
-    const selectedIndex = availableSites[Math.floor(Math.random() * availableSites.length)];
+    // Increment the total participant count
+    localStorage.setItem('totalParticipants', (currentCount + 1).toString());
     
-    // Increment the selected site's count
-    counts[selectedIndex]++;
-    localStorage.setItem('siteCounts', JSON.stringify(counts));
+    // Log the distribution for debugging
+    console.log(`Participant ${currentCount + 1} assigned to site ${selectedIndex}: ${this.SITES[selectedIndex]}`);
     
     return this.SITES[selectedIndex];
   }
